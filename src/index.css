@@ -6,15 +6,41 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: 'Outfit', sans-serif;
+/* ===== LENIS SMOOTH SCROLL STYLES ===== */
+html.lenis, html.lenis body {
+  height: auto;
 }
 
-body {
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+html, body, #root {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  font-family: 'Outfit', sans-serif;
   background: linear-gradient(135deg, #ffe0ec 0%, #fff5f9 40%, #ffffff 100%);
+}
+
+/* ===== HTML OVERLAY CONTAINER ===== */
+.html-overlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  pointer-events: none; /* Pass clicks to canvas below */
 }
 
 /* ===== SCROLL SECTIONS ===== */
@@ -27,17 +53,18 @@ body {
   justify-content: center;
   position: relative;
   padding: 40px 20px;
+  pointer-events: none; /* Let click pass to canvas */
 }
 
 /* --- Section 1: Hero --- */
 .section-hero {
   justify-content: space-between;
-  padding: 80px 20px 80px;
+  padding: 80px 20px 60px;
 }
 
 .hero-title {
   text-align: center;
-  animation: fadeInDown 1.5s ease-out;
+  pointer-events: auto; /* Allow hover/select */
 }
 
 .hero-title h1 {
@@ -52,26 +79,65 @@ body {
   line-height: 1.1;
 }
 
-.scroll-indicator {
-  text-align: center;
-  animation: fadeInUp 2s ease-out 0.5s both;
+/* --- Hero Tap Container & Combined GIF Button --- */
+.hero-tap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: auto;
+  margin-bottom: 20px;
+  animation: fadeInUp 2s ease-out 0.4s both;
+  pointer-events: none;
 }
 
-.scroll-indicator p {
+.gif-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  outline: none;
+  pointer-events: auto;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.gif-button:hover {
+  transform: translateY(-4px) scale(1.04);
+}
+
+.gif-button:active {
+  transform: translateY(2px) scale(0.96);
+}
+
+.gif-wrapper {
+  width: 155px; /* Increased size from 120px to 155px */
+  height: auto;
+  overflow: hidden;
+  /* 
+    Use multiply blend mode to render the white background of the GIF transparent 
+    against our pink/white gradient background.
+  */
+  mix-blend-mode: multiply; 
+  transition: filter 0.3s ease;
+}
+
+.gif-button:hover .gif-wrapper {
+  filter: drop-shadow(0 8px 15px rgba(255, 77, 141, 0.3));
+}
+
+.tap-me-text {
   font-family: 'Outfit', sans-serif;
-  font-weight: 300;
-  font-size: 0.8rem;
-  color: rgba(255, 77, 141, 0.4);
-  letter-spacing: 4px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #ff4d8d;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.scroll-arrow {
-  display: inline-block;
-  animation: bounceDown 2s ease-in-out infinite;
-  font-size: 1.5rem;
-  filter: drop-shadow(0 0 8px rgba(255, 77, 141, 0.3));
+  text-shadow: 
+    0 0 10px rgba(255, 182, 213, 0.5),
+    0 2px 5px rgba(255, 77, 141, 0.2);
+  animation: pulse 2s ease-in-out infinite;
 }
 
 /* --- Section 2: Middle --- */
@@ -81,13 +147,15 @@ body {
 
 .middle-content {
   text-align: center;
+  pointer-events: auto;
+  opacity: 0; /* Animated by GSAP */
+  transform: translateY(30px);
 }
 
 .middle-content .middle-hearts {
   font-size: 3rem;
   margin-bottom: 24px;
   filter: drop-shadow(0 0 15px rgba(255, 77, 141, 0.5));
-  animation: pulse 3s ease-in-out infinite;
 }
 
 .middle-content h2 {
@@ -117,6 +185,9 @@ body {
 
 .final-content {
   text-align: center;
+  pointer-events: auto;
+  opacity: 0; /* Animated by GSAP */
+  transform: scale(0.9);
 }
 
 .final-content h2 {
@@ -134,7 +205,6 @@ body {
   font-size: 2rem;
   letter-spacing: 12px;
   filter: drop-shadow(0 0 10px rgba(255, 77, 141, 0.4));
-  animation: pulse 3s ease-in-out infinite;
 }
 
 /* ===== LOADING SCREEN ===== */
@@ -193,20 +263,12 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: auto; /* Allow click to trigger burst */
 }
 
 /* ===== ANIMATIONS ===== */
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes pulse {
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }

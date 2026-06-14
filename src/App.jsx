@@ -1,79 +1,138 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { ScrollControls } from '@react-three/drei'
 import Scene from './components/Scene'
+import ScrollContent from './components/ScrollContent'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import Lenis from 'lenis'
 
-function LoadingScreen({ progress }) {
+gsap.registerPlugin(ScrollTrigger)
+
+// Global scroll state that React Three Fiber components can read in their useFrame loops
+export const scrollState = {
+  progress: 0
+}
+
+function LoadingScreen() {
+  const [progress, setProgress] = useState(0)
   const [fadeOut, setFadeOut] = useState(false)
   const [hidden, setHidden] = useState(false)
 
   useEffect(() => {
-    if (progress >= 100) {
-      const timer = setTimeout(() => setFadeOut(true), 500)
-      const hideTimer = setTimeout(() => setHidden(true), 1500)
-      return () => {
-        clearTimeout(timer)
-        clearTimeout(hideTimer)
+    // Simulate loading progress
+    let current = 0
+    const interval = setInterval(() => {
+      current += Math.random() * 20 + 8
+      if (current >= 100) {
+        current = 100
+        clearInterval(interval)
+        setTimeout(() => setFadeOut(true), 400)
+        setTimeout(() => setHidden(true), 1400)
       }
-    }
-  }, [progress])
+      setProgress(current)
+    }, 120)
+    return () => clearInterval(interval)
+  }, [])
 
   if (hidden) return null
+  const displayProgress = Math.min(Math.round(progress), 100)
 
   return (
     <div className={`loading-screen ${fadeOut ? 'fade-out' : ''}`}>
       <div className="loading-heart">💎💖</div>
-      <div className="loading-text">Loading Love...</div>
+      <div className="loading-text">Loading Heart in Love...</div>
       <div className="loading-bar-container">
-        <div className="loading-bar" style={{ width: `${progress}%` }} />
+        <div className="loading-bar" style={{ width: `${displayProgress}%` }} />
+      </div>
+      <div style={{ marginTop: '10px', fontSize: '0.8rem', color: '#ff4d8d', opacity: 0.6 }}>
+        {displayProgress}%
       </div>
     </div>
   )
 }
 
 export default function App() {
-  const [loading, setLoading] = useState(true)
-  const [progress, setProgress] = useState(0)
-
   useEffect(() => {
-    let current = 0
-    const interval = setInterval(() => {
-      current += Math.random() * 15 + 5
-      if (current >= 100) {
-        current = 100
-        clearInterval(interval)
-        setTimeout(() => setLoading(false), 2000)
+    // Initialize Lenis smooth scroll
+    const lenis = new Lenis({
+      duration: 1.0,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 0.9,
+    })
+
+    lenis.on('scroll', ScrollTrigger.update)
+
+    let rafId
+    function updateLenis(time) {
+      lenis.raf(time)
+      rafId = requestAnimationFrame(updateLenis)
+    }
+    rafId = requestAnimationFrame(updateLenis)
+
+    const trigger = ScrollTrigger.create({
+      trigger: 'body',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 0.1,
+      onUpdate: (self) => {
+        scrollState.progress = self.progress
       }
-      setProgress(current)
-    }, 200)
-    return () => clearInterval(interval)
+    })
+
+    gsap.to('#middle-content', {
+      opacity: 1,
+      y: 0,
+      scrollTrigger: {
+        trigger: '.section-middle',
+        start: 'top 80%',
+        end: 'center center',
+        scrub: 0.5,
+      }
+    })
+
+    gsap.to('#final-content', {
+      opacity: 1,
+      scale: 1,
+      scrollTrigger: {
+        trigger: '.section-final',
+        start: 'top 80%',
+        end: 'center center',
+        scrub: 0.5,
+      }
+    })
+
+    return () => {
+      lenis.destroy()
+      cancelAnimationFrame(rafId)
+      trigger.kill()
+      ScrollTrigger.getAll().forEach(t => t.kill())
+    }
   }, [])
 
   return (
     <>
-      <LoadingScreen progress={progress} />
+      <LoadingScreen />
 
+      {/* 3D Canvas Layer */}
       <div className="canvas-container">
         <Canvas
           camera={{ position: [0, 0, 8], fov: 50 }}
-          dpr={[1, 2]}
+          dpr={[1, 1.5]}
           gl={{
             antialias: true,
             alpha: true,
-            toneMapping: 3,
-            toneMappingExposure: 1.2,
-          }}
-          style={{
-            background: 'linear-gradient(135deg, #ffe0ec 0%, #fff5f9 40%, #ffffff 100%)',
+            powerPreference: "high-performance",
           }}
         >
-          <Suspense fallback={null}>
-            <ScrollControls pages={3} damping={0.25} distance={1.2}>
-              <Scene />
-            </ScrollControls>
-          </Suspense>
+          <Scene />
         </Canvas>
       </div>
+
+      {/* Native HTML Scroll Sections Layer */}
+      <ScrollContent />
     </>
   )
 }

@@ -1,11 +1,9 @@
 import React, { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useScroll } from '@react-three/drei'
 import * as THREE from 'three'
 
 export default function MouseEffects() {
   const { camera } = useThree()
-  const scroll = useScroll()
   const trailRef = useRef()
   const trailIndex = useRef(0)
   const prevPointer = useRef({ x: 0, y: 0 })
@@ -13,9 +11,8 @@ export default function MouseEffects() {
 
   useFrame((state) => {
     const { pointer } = state
-    const scrollOffset = scroll.offset
 
-    // Camera parallax based on mouse + scroll
+    // Camera parallax based on mouse
     cameraTarget.current.x = pointer.x * 1.2
     cameraTarget.current.y = pointer.y * 0.6
 

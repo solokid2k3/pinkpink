@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useMemo } from 'react'
+import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createHeartGeometry } from '../utils/heartShape'
@@ -59,10 +59,10 @@ export default function HeartBurst() {
   const planeRef = useRef(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0))
   const intersectPoint = useRef(new THREE.Vector3())
 
+  // Handle standard click to burst
   const handleClick = useCallback((e) => {
     e.stopPropagation()
     
-    // Get 3D position from click
     raycaster.setFromCamera(pointer, camera)
     raycaster.ray.intersectPlane(planeRef.current, intersectPoint.current)
     
@@ -78,24 +78,58 @@ export default function HeartBurst() {
         position: [...pos],
         velocity: [
           Math.cos(angle) * speed,
-          Math.sin(angle) * speed + 1,
+          Math.sin(angle) * speed + 1.2,
           (Math.random() - 0.5) * 1.5,
         ],
         startTime: now,
       })
     }
     
-    setBursts(prev => [...prev.slice(-50), ...newHearts])
-    
-    // Cleanup old bursts
-    setTimeout(() => {
-      setBursts(prev => prev.filter(b => performance.now() / 1000 - b.startTime < 3))
-    }, 3000)
+    setBursts(prev => [...prev.slice(-100), ...newHearts])
   }, [camera, raycaster, pointer])
+
+  // Handle massive burst triggered from HTML button tap
+  useEffect(() => {
+    const handleMassiveBurst = () => {
+      const now = performance.now() / 1000
+      const colors = ['#ff4d8d', '#ff6b9d', '#ffb6d5', '#ff3377', '#ff8ab5']
+      const newHearts = []
+      
+      // Spawn 45 hearts in a complete radial circle!
+      for (let i = 0; i < 45; i++) {
+        const angle = (i / 45) * Math.PI * 2 + (Math.random() - 0.5) * 0.1
+        const speed = 2.0 + Math.random() * 3.5
+        newHearts.push({
+          id: burstIdRef.current++,
+          position: [0, 0.2, 0], // Spawn centered around the main model
+          velocity: [
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed + 1.8, // eject upward slightly
+            (Math.random() - 0.5) * 2.5,
+          ],
+          startTime: now,
+        })
+      }
+      
+      setBursts(prev => [...prev.slice(-150), ...newHearts])
+    }
+
+    window.addEventListener('massive-heart-burst', handleMassiveBurst)
+    return () => window.removeEventListener('massive-heart-burst', handleMassiveBurst)
+  }, [])
+
+  // Garbage collect expired bursts
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = performance.now() / 1000
+      setBursts(prev => prev.filter(b => now - b.startTime < 3.0))
+    }, 1500)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <group>
-      {/* Invisible click plane */}
+      {/* Click interceptor plane */}
       <mesh onClick={handleClick} visible={false}>
         <planeGeometry args={[50, 50]} />
         <meshBasicMaterial transparent opacity={0} />

@@ -1,8 +1,8 @@
 import React, { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useScroll } from '@react-three/drei'
 import * as THREE from 'three'
 import { createHeartGeometry } from '../utils/heartShape'
+import { scrollState } from '../App'
 
 function Heart({ position, scale, speed, rotationSpeed, color, delay }) {
   const meshRef = useRef()
@@ -36,7 +36,6 @@ function Heart({ position, scale, speed, rotationSpeed, color, delay }) {
 
 export default function FloatingHearts() {
   const groupRef = useRef()
-  const scroll = useScroll()
 
   const hearts = useMemo(() => {
     const colors = ['#ff4d8d', '#ff6ba3', '#ffb6d5', '#ff8ab5', '#ffa0c5', '#ff3377']
@@ -63,8 +62,7 @@ export default function FloatingHearts() {
 
   useFrame(() => {
     if (!groupRef.current) return
-    // Gentle overall rotation driven by scroll
-    const s = scroll.offset
+    const s = scrollState.progress
     groupRef.current.rotation.y = s * Math.PI * 2
   })
 

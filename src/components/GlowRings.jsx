@@ -1,17 +1,16 @@
 import React, { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useScroll } from '@react-three/drei'
 import * as THREE from 'three'
+import { scrollState } from '../App'
 
 export default function GlowRings() {
   const ring1Ref = useRef()
   const ring2Ref = useRef()
   const ring3Ref = useRef()
-  const scroll = useScroll()
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime()
-    const s = scroll.offset
+    const s = scrollState.progress
 
     // Rings expand as user scrolls deeper
     const scaleMultiplier = 1 + s * 0.4
