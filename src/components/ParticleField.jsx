@@ -2,9 +2,9 @@ import React, { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-export default function ParticleField() {
+export default function ParticleField({ isMobile }) {
   const pointsRef = useRef()
-  const count = 600
+  const count = isMobile ? 250 : 600
 
   const [positions, colors, sizes] = useMemo(() => {
     const pos = new Float32Array(count * 3)
@@ -34,7 +34,7 @@ export default function ParticleField() {
       siz[i] = Math.random() * 0.08 + 0.02
     }
     return [pos, col, siz]
-  }, [])
+  }, [count])
 
   const initialPositions = useMemo(() => new Float32Array(positions), [positions])
 

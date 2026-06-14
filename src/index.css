@@ -87,7 +87,7 @@ html, body, #root {
   margin-top: auto;
   margin-bottom: 20px;
   animation: fadeInUp 2s ease-out 0.4s both;
-  pointer-events: none;
+  pointer-events: auto; /* Changed to auto to ensure clicks register 100% of the time */
 }
 
 .gif-button {
@@ -112,13 +112,9 @@ html, body, #root {
 }
 
 .gif-wrapper {
-  width: 155px; /* Increased size from 120px to 155px */
+  width: 155px;
   height: auto;
   overflow: hidden;
-  /* 
-    Use multiply blend mode to render the white background of the GIF transparent 
-    against our pink/white gradient background.
-  */
   mix-blend-mode: multiply; 
   transition: filter 0.3s ease;
 }

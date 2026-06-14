@@ -9,16 +9,18 @@ const GIF_LIST = [
 ]
 
 export default function ScrollContent() {
-  // Initial GIF is bongo-cat-transparent.gif
   const [currentGif, setCurrentGif] = useState('/bongo-cat-transparent.gif')
 
   const handleTap = () => {
-    // 1. Select a random new GIF (different from the current one to guarantee a change)
+    // 1. Dispatch custom event to trigger the Phoenix flyby animation in Canvas
+    window.dispatchEvent(new CustomEvent('phoenix-flyby'))
+
+    // 2. Select a random new GIF
     const otherGifs = GIF_LIST.filter(gif => gif !== currentGif)
     const randomGif = otherGifs[Math.floor(Math.random() * otherGifs.length)]
     setCurrentGif(randomGif)
 
-    // 2. Play elastic bounce & wobble animation on the entire GIF button container
+    // 3. Play elastic bounce & wobble animation on the entire GIF button container
     import('gsap').then(({ default: gsap }) => {
       gsap.fromTo('#special-tap-btn', 
         { scale: 0.85, rotation: -8 }, 

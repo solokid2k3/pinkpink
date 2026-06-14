@@ -55,10 +55,11 @@ function Petal({ startPosition, speed, rotSpeed, size, delay }) {
   )
 }
 
-export default function PetalRain() {
+export default function PetalRain({ isMobile }) {
   const petals = useMemo(() => {
     const items = []
-    for (let i = 0; i < 35; i++) {
+    const count = isMobile ? 15 : 35
+    for (let i = 0; i < count; i++) {
       items.push({
         startPosition: [
           (Math.random() - 0.5) * 20,
@@ -72,7 +73,7 @@ export default function PetalRain() {
       })
     }
     return items
-  }, [])
+  }, [isMobile])
 
   return (
     <group>

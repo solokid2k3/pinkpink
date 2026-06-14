@@ -34,15 +34,16 @@ function Heart({ position, scale, speed, rotationSpeed, color, delay }) {
   )
 }
 
-export default function FloatingHearts() {
+export default function FloatingHearts({ isMobile }) {
   const groupRef = useRef()
 
   const hearts = useMemo(() => {
     const colors = ['#ff4d8d', '#ff6ba3', '#ffb6d5', '#ff8ab5', '#ffa0c5', '#ff3377']
     const items = []
+    const count = isMobile ? 12 : 28
 
-    for (let i = 0; i < 28; i++) {
-      const angle = (i / 28) * Math.PI * 2
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2
       const radius = 4 + Math.random() * 8
       items.push({
         position: [
@@ -58,7 +59,7 @@ export default function FloatingHearts() {
       })
     }
     return items
-  }, [])
+  }, [isMobile])
 
   useFrame(() => {
     if (!groupRef.current) return

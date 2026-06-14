@@ -40,7 +40,7 @@ function LoadingScreen() {
   return (
     <div className={`loading-screen ${fadeOut ? 'fade-out' : ''}`}>
       <div className="loading-heart">💎💖</div>
-      <div className="loading-text">Loading Heart in Love...</div>
+      <div className="loading-text">Summoning Phoenix Bird...</div>
       <div className="loading-bar-container">
         <div className="loading-bar" style={{ width: `${displayProgress}%` }} />
       </div>
@@ -52,15 +52,17 @@ function LoadingScreen() {
 }
 
 export default function App() {
+  const isMobile = typeof window !== 'undefined' && (/Mobi|Android|iPhone/i.test(navigator.userAgent) || window.innerWidth < 768)
+
   useEffect(() => {
     // Initialize Lenis smooth scroll
     const lenis = new Lenis({
-      duration: 1.0,
+      duration: isMobile ? 0.8 : 1.0, // Faster/responsive scroll for mobile
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 0.9,
+      wheelMultiplier: isMobile ? 1.0 : 0.9,
     })
 
     lenis.on('scroll', ScrollTrigger.update)
@@ -110,7 +112,7 @@ export default function App() {
       trigger.kill()
       ScrollTrigger.getAll().forEach(t => t.kill())
     }
-  }, [])
+  }, [isMobile])
 
   return (
     <>
@@ -120,7 +122,7 @@ export default function App() {
       <div className="canvas-container">
         <Canvas
           camera={{ position: [0, 0, 8], fov: 50 }}
-          dpr={[1, 1.5]}
+          dpr={isMobile ? 1 : [1, 1.5]}
           gl={{
             antialias: true,
             alpha: true,
